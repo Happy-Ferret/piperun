@@ -24,7 +24,7 @@ as it is executed! Alternately, the above test can also be run with a simple
 **piperun** uses a syscall-created memfd followed by an fexecve(3)
 call to execute your code.
 
-#### But why?:
+## But why?:
 
 * There is no other good way (that I know of) to execute an ELF binary without writing it to a temporary file first.
 * Using `/lib/ld-linux-x86-64.so.2` to execute code also only works with temporary files due to it's usage of mmap(3).
