@@ -14,7 +14,6 @@
 #include <linux/memfd.h>
 
 #define UNUSED __attribute__ ((unused))
-#define STDIN 0
 
 extern char **environ;
 
@@ -32,7 +31,7 @@ int main(int argc UNUSED, char **argv)
 		err(EXIT_FAILURE, "%s", "error allocating buffer");
 
 	for (;;) {
-		if ((buf_len = read(STDIN, buf, count)) == -1) {
+		if ((buf_len = read(STDIN_FILENO, buf, count)) == -1) {
 			free(buf);
 			buf = NULL;
 			err(EXIT_FAILURE, "%s", "error reading from stdin");

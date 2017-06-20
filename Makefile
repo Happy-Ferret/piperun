@@ -47,7 +47,7 @@ $(TOBJ): %.o: %.c $(HDR)
 install: $(TARGET)
 	@printf "%s\n" "installing"
 	@mkdir -pv $(PREFIX)/bin
-	install -c $(TARGET) $(prefix)/bin
+	install -c $(TARGET) $(PREFIX)/bin
 
 uninstall:
 	@rm -fv $(PREFIX)/bin/$(TARGET)
