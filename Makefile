@@ -10,13 +10,14 @@ PREFIX ?= $(DESTDIR)/usr/local
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
 CFLAGS = -O2 -pipe -MMD -I. -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-z,now
+TAP = t/tap
 SRC = $(wildcard *.c)
 TSRC = $(wildcard t/*.c)
 OBJ = $(patsubst %.c, %.o, $(wildcard *.c))
-TOBJ = $(patsubst %, %.o, $(TESTS))
-HDR = $(wildcard *.h)
+TOBJ = $(patsubst %, %.o, $(TESTS)) $(TAP).o
+HDR = $(wildcard *.h) $(wildcard t/*.h)
 
-TESTS = $(patsubst %.c, %, $(TSRC))
+TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
 TARGET = piperun
 
 %:
@@ -39,7 +40,7 @@ check test: tests
 
 tests: $(TESTS)
 
-$(TESTS): %: %.o $(filter $(subst t/test, , %), $(filter-out $(TARGET).o, $(OBJ)))
+$(TESTS): %: %.o $(TAP).o $(filter $(subst t/hello, , %), $(filter-out $(TARGET).o, $(OBJ)))
 
 $(TOBJ): %.o: %.c $(HDR)
 
