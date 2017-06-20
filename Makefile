@@ -14,12 +14,11 @@ LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-z,now
 SRC = $(wildcard *.c)
 TSRC = $(wildcard t/*.c)
 OBJ = $(patsubst %.c, %.o, $(wildcard *.c))
-TOBJ = $(patsubst %, %.o, $(TESTS)) $(TAP).o
+TOBJ = $(patsubst %, %.o, $(TESTS))
 HDR = $(wildcard *.h) $(wildcard t/*.h)
 
-TAP = t/tap
 TARGET = piperun
-TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
+TESTS = $(patsubst %.c, %, $(TSRC))
 
 %:
 	$(CC) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $@
@@ -41,7 +40,7 @@ check test: $(TARGET) tests
 
 tests: $(TESTS)
 
-$(TESTS): %: %.o $(TAP).o $(filter $(subst t/hello, , %), $(filter-out $(TARGET).o, $(OBJ)))
+$(TESTS): %: %.o
 
 $(TOBJ): %.o: %.c $(HDR)
 
