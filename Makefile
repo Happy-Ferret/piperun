@@ -16,9 +16,9 @@ TSRC = $(wildcard t/*.c)
 OBJ = $(patsubst %.c, %.o, $(wildcard *.c))
 TOBJ = $(patsubst %, %.o, $(TESTS))
 HDR = $(wildcard *.h) $(wildcard t/*.h)
+TESTS = $(patsubst %.c, %, $(TSRC))
 
 TARGET = piperun
-TESTS = $(patsubst %.c, %, $(TSRC))
 
 %:
 	$(CC) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $@
@@ -45,7 +45,7 @@ $(TESTS): %: %.o
 $(TOBJ): %.o: %.c $(HDR)
 
 install: $(TARGET)
-	@printf "%s\n" "installing"
+	@printf "%s\n" "installing:"
 	@mkdir -pv $(PREFIX)/bin
 	install -c $(TARGET) $(PREFIX)/bin
 
@@ -53,14 +53,14 @@ uninstall:
 	@rm -fv $(PREFIX)/bin/$(TARGET)
 
 dist: clean
-	@printf "%s\n" "creating dist tarball"
+	@printf "%s\n" "creating dist tarball:"
 	@mkdir -pv $(TARGET)
 	@cp -Rv LICENSE Makefile README.md $(HDR) $(SRC) $(TSRC) $(TARGET)
 	tar -czf $(TARGET).tar.gz $(TARGET)
 	@rm -rfv $(TARGET)
 
 clean:
-	@printf "%s\n" "cleaning"
+	@printf "%s\n" "cleaning:"
 	@rm -fv $(TARGET) $(OBJ) $(TOBJ) $(TESTS) $(TARGET).tar.gz $(wildcard *.d)
 
 -include $(wildcard *.d) $(wildcard t/*.d)
