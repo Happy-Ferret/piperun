@@ -8,17 +8,18 @@ CC ?= gcc
 LD ?= $(CC)
 PREFIX ?= $(DESTDIR)/usr/local
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS = -O2 -pipe -MMD -I. -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L
+CFLAGS = -O2 -pipe -MMD -I. -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE
 LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-z,now
-TAP = t/tap
+
 SRC = $(wildcard *.c)
 TSRC = $(wildcard t/*.c)
 OBJ = $(patsubst %.c, %.o, $(wildcard *.c))
 TOBJ = $(patsubst %, %.o, $(TESTS)) $(TAP).o
 HDR = $(wildcard *.h) $(wildcard t/*.h)
 
-TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
+TAP = t/tap
 TARGET = piperun
+TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
 
 %:
 	$(CC) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $@
@@ -32,7 +33,7 @@ $(TARGET): $(OBJ)
 
 $(OBJ): %.o: %.c $(HDR)
 
-check test: tests
+check test: $(TARGET) tests
 	@printf "\n%s\n" "piped output:"
 	$(CC) $(LDFLAGS) $(TARGET_ARCH) $(TSRC) -o /dev/stdout | ./$(TARGET)
 	@printf "\n%s\n" "non-piped output:"
@@ -45,7 +46,7 @@ $(TESTS): %: %.o $(TAP).o $(filter $(subst t/hello, , %), $(filter-out $(TARGET)
 $(TOBJ): %.o: %.c $(HDR)
 
 install: $(TARGET)
-	@printf "\t%s\n" "installing"
+	@printf "%s\n" "installing"
 	@mkdir -pv $(PREFIX)/bin
 	install -c $(TARGET) $(prefix)/bin
 
@@ -53,14 +54,14 @@ uninstall:
 	@rm -fv $(PREFIX)/bin/$(TARGET)
 
 dist: clean
-	@printf "\t%s\n" "creating dist tarball"
+	@printf "%s\n" "creating dist tarball"
 	@mkdir -pv $(TARGET)
 	@cp -Rv LICENSE Makefile README.md $(HDR) $(SRC) $(TSRC) $(TARGET)
 	tar -czf $(TARGET).tar.gz $(TARGET)
 	@rm -rfv $(TARGET)
 
 clean:
-	@printf "\t%s\n" "cleaning"
+	@printf "%s\n" "cleaning"
 	@rm -fv $(TARGET) $(OBJ) $(TOBJ) $(TESTS) $(TARGET).tar.gz $(wildcard *.d)
 
 -include $(wildcard *.d) $(wildcard t/*.d)

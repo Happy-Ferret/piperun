@@ -5,7 +5,7 @@
  * See LICENSE file for copyright and license details.
  */
 
-#include <string.h>
+#include <err.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +14,7 @@
 #include <linux/memfd.h>
 
 #define UNUSED __attribute__ ((unused))
+#define STDIN 0
 
 extern char **environ;
 
@@ -21,36 +22,32 @@ int main(int argc UNUSED, char **argv)
 {
 	int fd;
 	ssize_t buf_len;
+	unsigned char *buf;
 	/* 2MB */
 	unsigned count = 1024 * 1024 * 2;
-	unsigned char *buf = malloc(count);
 
-	if ((fd = syscall(SYS_memfd_create, "Virtual file", MFD_CLOEXEC)) == -1) {
-		fprintf(stderr, "%s\n", strerror(errno));
-		free(buf);
-		return 1;
-	}
+	if ((fd = syscall(SYS_memfd_create, "piperun", MFD_CLOEXEC)) == -1)
+		err(EXIT_FAILURE, "%s", "error creating memfd");
+	if ((buf = malloc(count)) == NULL)
+		err(EXIT_FAILURE, "%s", "error allocating buffer");
 
 	for (;;) {
-		if ((buf_len = read(0, buf, count)) == -1) {
-			fprintf(stderr, "%s\n", strerror(errno));
+		if ((buf_len = read(STDIN, buf, count)) == -1) {
 			free(buf);
-			return 1;
+			err(EXIT_FAILURE, "%s", "error reading from stdin");
 		}
 		/* break on EOF */
 		if (buf_len == 0)
 			break;
+
 		if (write(fd, buf, buf_len) == -1) {
-			fprintf(stderr, "%s\n", strerror(errno));
 			free(buf);
-			return 1;
+			err(EXIT_FAILURE, "%s", "error writing to memfd");
 		}
 	}
 
 	free(buf);
 	fexecve(fd, argv, environ);
-
 	/* fexecve() should never return */
-	fprintf(stderr, "%s\n", strerror(errno));
-	return 1;
+	err(EXIT_FAILURE, "%s", "fexecve() returned");
 }
