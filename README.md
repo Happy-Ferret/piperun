@@ -1,4 +1,4 @@
-# piperun - Run ELF binary code read from stdin
+# piperun - Run ELF binary code read from standard input.
 
 **piperun** is a simple C program than allows you to
 execute a compiled ELF binary read from standard input.

@@ -1,5 +1,5 @@
 #
-# piperun - Run ELF binary code read from stdin
+# piperun - Run ELF binary code read from standard input.
 #
 # AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
 # See LICENSE file for copyright and license details.
