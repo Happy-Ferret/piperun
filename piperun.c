@@ -34,6 +34,7 @@ int main(int argc UNUSED, char **argv)
 	for (;;) {
 		if ((buf_len = read(STDIN, buf, count)) == -1) {
 			free(buf);
+			buf = NULL;
 			err(EXIT_FAILURE, "%s", "error reading from stdin");
 		}
 		/* break on EOF */
@@ -42,11 +43,13 @@ int main(int argc UNUSED, char **argv)
 
 		if (write(fd, buf, buf_len) == -1) {
 			free(buf);
+			buf = NULL;
 			err(EXIT_FAILURE, "%s", "error writing to memfd");
 		}
 	}
 
 	free(buf);
+	buf = NULL;
 	fexecve(fd, argv, environ);
 	/* fexecve() should never return */
 	err(EXIT_FAILURE, "%s", "fexecve() returned");
