@@ -4,8 +4,8 @@ TAGS
 vgcore*
 
 # Binaries
-cepl
-t/test
+piperun
+t/hello
 
 # Object files
 *.o
