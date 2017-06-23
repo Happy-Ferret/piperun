@@ -17,39 +17,45 @@
 
 extern char **environ;
 
+/* silence linter */
+long syscall(long number, ...);
+int fexecve(int mem_fd, char *const argv[], char *const envp[]);
+
 int main(int argc UNUSED, char **argv)
 {
-	int fd;
-	ssize_t buf_len;
-	unsigned char *buf;
-	/* 2MB */
-	unsigned count = 1024 * 1024 * 2;
+	int mem_fd;
 
-	if ((fd = syscall(SYS_memfd_create, "piperun", MFD_CLOEXEC)) == -1)
+	if ((mem_fd = syscall(SYS_memfd_create, "piperun", MFD_CLOEXEC)) == -1)
 		err(EXIT_FAILURE, "%s", "error creating memfd");
-	if ((buf = malloc(count)) == NULL)
-		err(EXIT_FAILURE, "%s", "error allocating buffer");
 
 	for (;;) {
+		ssize_t buf_len;
+		size_t count = sysconf(_SC_PAGESIZE);
+		unsigned char buf[count];
+
 		if ((buf_len = read(STDIN_FILENO, buf, count)) == -1) {
-			free(buf);
-			buf = NULL;
-			err(EXIT_FAILURE, "%s", "error reading from stdin");
+			if (errno == EINTR || errno == EAGAIN) {
+				continue;
+			} else {
+				err(EXIT_FAILURE, "%s", "error reading from stdin");
+				return 0;
+			}
 		}
 		/* break on EOF */
 		if (buf_len == 0)
 			break;
 
-		if (write(fd, buf, buf_len) == -1) {
-			free(buf);
-			buf = NULL;
-			err(EXIT_FAILURE, "%s", "error writing to memfd");
+		if (write(mem_fd, buf, buf_len) == -1) {
+			if (errno == EINTR || errno == EAGAIN) {
+				continue;
+			} else {
+				err(EXIT_FAILURE, "%s", "error writing to memfd");
+				return 0;
+			}
 		}
 	}
 
-	free(buf);
-	buf = NULL;
-	fexecve(fd, argv, environ);
+	fexecve(mem_fd, argv, environ);
 	/* fexecve() should never return */
 	err(EXIT_FAILURE, "%s", "fexecve() returned");
 }
