@@ -34,24 +34,18 @@ int main(int argc UNUSED, char **argv)
 		unsigned char buf[count];
 
 		if ((buf_len = read(STDIN_FILENO, buf, count)) == -1) {
-			if (errno == EINTR || errno == EAGAIN) {
+			if (errno == EINTR || errno == EAGAIN)
 				continue;
-			} else {
-				err(EXIT_FAILURE, "%s", "error reading from stdin");
-				return 0;
-			}
+			err(EXIT_FAILURE, "%s", "error reading from stdin");
 		}
 		/* break on EOF */
 		if (buf_len == 0)
 			break;
 
 		if (write(mem_fd, buf, buf_len) == -1) {
-			if (errno == EINTR || errno == EAGAIN) {
+			if (errno == EINTR || errno == EAGAIN)
 				continue;
-			} else {
-				err(EXIT_FAILURE, "%s", "error writing to memfd");
-				return 0;
-			}
+			err(EXIT_FAILURE, "%s", "error writing to memfd");
 		}
 	}
 
