@@ -13,17 +13,16 @@
 #include <sys/syscall.h>
 #include <linux/memfd.h>
 
-#define UNUSED __attribute__ ((unused))
-
 extern char **environ;
 
 /* silence linter */
 long syscall(long number, ...);
 int fexecve(int mem_fd, char *const argv[], char *const envp[]);
 
-int main(int argc UNUSED, char **argv)
+int main(int argc, char **argv)
 {
 	int mem_fd;
+	(void)argc;
 
 	if ((mem_fd = syscall(SYS_memfd_create, "piperun", MFD_CLOEXEC)) == -1)
 		err(EXIT_FAILURE, "%s", "error creating memfd");
@@ -32,7 +31,6 @@ int main(int argc UNUSED, char **argv)
 		ssize_t buf_len;
 		size_t count = sysconf(_SC_PAGESIZE);
 		unsigned char buf[count];
-
 		if ((buf_len = read(STDIN_FILENO, buf, count)) == -1) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
@@ -41,7 +39,6 @@ int main(int argc UNUSED, char **argv)
 		/* break on EOF */
 		if (buf_len == 0)
 			break;
-
 		if (write(mem_fd, buf, buf_len) == -1) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
