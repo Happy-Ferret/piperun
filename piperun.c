@@ -5,6 +5,10 @@
  * See LICENSE file for copyright and license details.
  */
 
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE
+#endif
+
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
@@ -14,10 +18,6 @@
 #include <linux/memfd.h>
 
 extern char **environ;
-
-/* silence linter */
-long syscall(long number, ...);
-int fexecve(int mem_fd, char *const argv[], char *const envp[]);
 
 int main(int argc, char **argv)
 {
